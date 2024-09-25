@@ -122,7 +122,7 @@
             files.forEach(file => {
                 const li = document.createElement('li');
                 li.textContent = file.name;
-                li.onclick = () => { window.location = `viewer.html?url=${encodeURIComponent(file.download_url)}` };
+                li.onclick = () => { window.location = `view.html?url=${encodeURIComponent(file.download_url)}` };
                 fileList.appendChild(li);
             });
         }
