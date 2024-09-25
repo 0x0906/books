@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books</title>
+    <style>
+       body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile img {
+            border-radius: 50%;
+            width: 100px;  /* Adjust size as needed */
+            height: 100px; /* Adjust size as needed */
+            margin-right: 15px;
+        }
+
+        h1 {
+            color: #bb86fc;
+            margin: 0; /* Remove default margin */
+        }
+
+        h2 {
+            color: #ffffff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #1e1e1e;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        li:hover {
+            background-color: #3700b3;
+        }
+
+        li:active {
+            background-color: #6200ee;
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            padding: 10px;
+            border: 1px solid #bb86fc;
+            border-radius: 5px;
+            width: calc(100% - 120px); /* Adjust width */
+            margin-right: 10px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        #search-button {
+            padding: 10px;
+            background-color: #bb86fc;
+            border: none;
+            border-radius: 5px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #search-button:hover {
+            background-color: #3700b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile">
+        <img src="https://avatars.githubusercontent.com/u/132240325?v=4" alt="Profile Picture">
+        <h1>0x0906/books</h1>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search files...">
+        <button id="search-button">Search</button>
+    </div>
+
+    <ul id="file-list"></ul> 
+
+    <script>
+        const owner = '0x0906'; 
+        const repo = 'books';
+        const path = 'files';
+        let files = [];
+
+        fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                files = data;
+                displayFiles(files);
+            })
+            .catch(error => console.error('Error fetching files:', error));
+
+        function displayFiles(files) {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.onclick = () => { window.location = `viewer.html?url=${encodeURIComponent(file.download_url)}` };
+                fileList.appendChild(li);
+            });
+        }
+
+        document.getElementById('search-button').onclick = () => {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filteredFiles = files.filter(file => file.name.toLowerCase().includes(query));
+            displayFiles(filteredFiles);
+        };
+
+        document.getElementById('search-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('search-button').click();
+            }
+        });
+
+    </script>
+</body>
+</html>

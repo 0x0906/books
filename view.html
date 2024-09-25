@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View PDF</title>
+</head>
+<body>
+    <h1>View PDF File</h1>
+    <iframe id="pdf-viewer" width="100%" height="600px"></iframe>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const pdfUrl = urlParams.get('url');
+
+        if (pdfUrl) {
+            document.getElementById('pdf-viewer').src = pdfUrl;
+        } else {
+            document.body.innerHTML = '<p>No PDF file specified.</p>';
+        }
+    </script>
+</body>
+</html>
