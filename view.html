@@ -4,20 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        canvas {
+            border: 1px solid #ffffff;
+            display: block;
+            margin: 0 auto;
+        }
+        .navigation {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button, input {
+            padding: 10px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button {
+            background-color: #bb86fc;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        input {
+            width: 60px;
+            text-align: center;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
-    <h1>View PDF File</h1>
-    <iframe id="pdf-viewer" width="100%" height="600px"></iframe>
+    <canvas id="pdf-canvas"></canvas>
+    <div class="navigation">
+        <button id="prev">Previous</button>
+        <button id="next">Next</button>
+        <span>Page: <span id="page-num">1</span> / <span id="page-count">1</span></span>
+        <input type="number" id="page-input" placeholder="Go to page" min="1">
+        <button id="go">Go</button>
+        <button id="fullscreen">Full Screen</button>
+    </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const pdfUrl = urlParams.get('url');
+        let pdfDoc = null;
+        let currentPage = 1;
 
         if (pdfUrl) {
-            document.getElementById('pdf-viewer').src = pdfUrl;
+            pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+                pdfDoc = pdf;
+                document.getElementById('page-count').textContent = pdf.numPages;
+                renderPage(currentPage);
+            }).catch(error => {
+                console.error('Error loading PDF: ', error);
+            });
         } else {
             document.body.innerHTML = '<p>No PDF file specified.</p>';
         }
+
+        function renderPage(pageNum) {
+            pdfDoc.getPage(pageNum).then(page => {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale: scale });
+                const canvas = document.getElementById('pdf-canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport,
+                };
+                page.render(renderContext);
+                document.getElementById('page-num').textContent = pageNum;
+            });
+        }
+
+        document.getElementById('prev').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+
+        document.getElementById('next').addEventListener('click', () => {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+
+        document.getElementById('go').addEventListener('click', () => {
+            const pageInput = document.getElementById('page-input').value;
+            const pageNum = parseInt(pageInput);
+            if (pageNum > 0 && pageNum <= pdfDoc.numPages) {
+                currentPage = pageNum;
+                renderPage(currentPage);
+            } else {
+                alert(`Please enter a valid page number between 1 and ${pdfDoc.numPages}.`);
+            }
+        });
+
+        document.getElementById('fullscreen').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                document.documentElement.requestFullscreen();
+            }
+        });
     </script>
 </body>
 </html>
